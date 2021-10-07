@@ -1,7 +1,6 @@
 [package]
 name = "mjpeg_rs"
-version = "0.1.0"
-edition = "2018"
+version = "0.0.1"
 license = "Apache-2.0/MIT"
 authors = ["oldcat <924417424@qq.com>"]
 edition = "2018"
