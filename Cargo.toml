@@ -1,0 +1,16 @@
+[package]
+name = "mjpeg_rs"
+version = "0.1.0"
+edition = "2018"
+license = "Apache-2.0/MIT"
+authors = ["oldcat <924417424@qq.com>"]
+edition = "2018"
+readme = "README.md"
+description = "rust编写的mjpeg服务器"
+categories = ["Web programming","Computer vision","Embedded development","Multimedia"]
+repository = "https://github.com/t924417424/mjpeg_rs"
+homepage = "https://github.com/t924417424/mjpeg_rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
