@@ -2,15 +2,14 @@ use std::{
     error::Error,
     io::Write,
     net::{TcpListener, ToSocketAddrs},
-    sync::{
-        mpsc::{sync_channel, Receiver, SyncSender},
-        Arc, Mutex,
-    },
+    sync::{Arc, Mutex},
     thread,
 };
 
+use crossbeam_channel::{bounded, Receiver, SendError, Sender, TrySendError};
+
 pub struct MJpeg {
-    send: SyncSender<Vec<u8>>,
+    send: Sender<Vec<u8>>,
     recv: Arc<Mutex<Receiver<Vec<u8>>>>,
 }
 
@@ -21,7 +20,7 @@ impl MJpeg {
     /// let m = Arc::new(MJpeg::new());
     /// ```
     pub fn new() -> Self {
-        let (send, recv) = sync_channel::<Vec<u8>>(0);
+        let (send, recv) = bounded::<Vec<u8>>(1);
         let recv = Arc::new(Mutex::new(recv));
         Self { send, recv }
     }
@@ -37,9 +36,41 @@ impl MJpeg {
     ///     m.update_jpeg(b).unwrap();
     /// }
     /// ```
-    pub fn update_jpeg(&self, buf: Vec<u8>) -> Result<(), Box<dyn Error>> {
+    // FIXME: convert this error into our own type (or the one from std),
+    // to avoid exposing our dependency on crossbeam channel.
+    pub fn update_jpeg(&self, buf: Vec<u8>) -> Result<(), SendError<Vec<u8>>> {
         self.send.send(buf)?;
         Ok(())
+    }
+
+    /// 将流推送到mjpeg
+    /// # example
+    /// ```
+    /// let m = Arc::new(MJpeg::new());
+    /// let mrc = m.clone();
+    /// thread::spawn(move || mrc.run("0.0.0.0:8088").unwrap());
+    /// loop {
+    ///     let b = camera.take_one().unwrap();
+    ///     match m.try_update_jpeg(b) {
+    ///         Ok(_) => (),
+    ///         Err(TrySendError::Full(_b)) => println!("nobody is listening, or queue is backed up")
+    ///         Err(TrySendError::Disconnected(_b)) => {
+    ///             println!("disconnected");
+    ///             break;
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    // FIXME: convert this error into our own type (or the one from std),
+    // to avoid exposing our dependency on crossbeam channel.
+    pub fn try_update_jpeg(&self, buf: Vec<u8>) -> Result<(), TrySendError<Vec<u8>>> {
+        self.send.send(buf)?;
+        Ok(())
+    }
+
+    /// Ask whether the jpeg queue is full (happens when the reader disconnects or is slow to respond)
+    pub fn is_full(&self) -> bool {
+        self.send.is_full()
     }
 
     /// 设置mjpeg服务端口

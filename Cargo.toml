@@ -6,10 +6,11 @@ authors = ["oldcat <924417424@qq.com>"]
 edition = "2018"
 readme = "README.md"
 description = "rust编写的mjpeg服务器"
-categories = ["Web programming","Computer vision","Embedded development","Multimedia"]
+categories = ["Web programming", "Computer vision", "Embedded development", "Multimedia"]
 repository = "https://github.com/t924417424/mjpeg_rs"
 homepage = "https://github.com/t924417424/mjpeg_rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+crossbeam-channel = "0.5.1"
